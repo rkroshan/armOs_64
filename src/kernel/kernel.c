@@ -1,5 +1,6 @@
 #include "uart/uart.h"
 #include "utils/utils.h"
+#include "utils/assert.h"
 
 /*uart testing*/
 void uart_test(void)
@@ -17,6 +18,8 @@ void kernel_main()
 {
     /*uart testing*/
     uart_test();
+    /*assert testing*/
+    ASSERT(0);
     while(1)
     {
         //loop infinite

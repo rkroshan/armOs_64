@@ -1,4 +1,4 @@
-.section .text
+.section .text_boot
 .global start
 
 start:
