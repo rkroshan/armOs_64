@@ -1,5 +1,5 @@
 #include "uart/uart.h"
-#include "utils/print.h"
+#include "utils/utils.h"
 
 /*uart testing*/
 void uart_test(void)
