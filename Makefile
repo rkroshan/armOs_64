@@ -28,4 +28,4 @@ clean:
 run: run_qemu
 
 run_qemu:
-	qemu-system-aarch64 -M raspi3 -serial stdio -kernel $(BIN_DIRECTORY)/$(KERNEL_BIN)
+	qemu-system-aarch64 -M raspi3b -serial stdio -kernel $(BIN_DIRECTORY)/$(KERNEL_BIN)
