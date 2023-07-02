@@ -16,10 +16,12 @@ void uart_test(void)
 
 void kernel_main()
 {
+    /*check current exception level*/
+    printk("Current EL is EL%u\n",(uint64_t)get_el());
     /*uart testing*/
     uart_test();
     /*assert testing*/
-    ASSERT(0);
+    ASSERT(1);
     while(1)
     {
         //loop infinite

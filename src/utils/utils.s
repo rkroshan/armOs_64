@@ -6,7 +6,13 @@
 .global memcpy
 .global memmove
 .global memcmp
+.global get_el
 
+get_el:
+    mrs x0, currentel   //currentel[3:2] bit define at which el we are
+    lsr x0, x0, #2
+    ret
+    
 delay:
     subs x0, x0, #1 //x0 = x0 - 1
     bne delay

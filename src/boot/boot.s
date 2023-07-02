@@ -13,6 +13,24 @@ end:
     b end                       //infinite loop 
 
 kernel_entry:
+check_if_el2:
+    mrs x0, currentel           //currentel[3:2] bit define at which el we are
+    lsr x0, x0, #2
+    cmp x0, #2                  //if el is El2, which is the case with Raspi3b
+    bne end                     //should not be possible
+switch_to_el1:
+    msr sctlr_el1, xzr          //zero-out sctrl_el1 register
+    mov x0, #(1 << 31)
+    msr hcr_el2, x0             //makes execution state of el1 as Aarch64
+    
+    mov x0, #0b1111000101       //spsr_el2 Aarch64 bit configuration: mode set to el1, diabled all interrupts, this will be copied to PSTATE on ret
+    msr spsr_el2, x0
+
+    adr x0, el1_entry           //get addr of el1_entry label first instruction
+    msr elr_el2, x0             //set the return addr to el1_entry, this is copied to LR register on ret
+    eret
+    
+el1_entry:
     mov sp, #0x80000            //move the stack pointer to 0x80000, above which boot code will lie
 init_bss_section:
     ldr x0, =bss_start          //get bss_start in x0
