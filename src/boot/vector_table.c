@@ -1,13 +1,25 @@
 #include <stdint.h>
-#include "utils/print.h"
+#include "utils/utils.h"
+#include "timer/generic_timer.h"
 
 void exception_handler(uint64_t numid, uint64_t esr, uint64_t elr)
 {
+    uint32_t irq;
     switch (numid) {
         case 1:
             printk("sync error at %x: %x\r\n", elr, esr);
             while (1) { }
-            
+            break;
+        case 2:
+            irq = inw(CNTP_STATUS_EL0); //check the interrupt source enabled for this core
+            if (irq & (1 << 1)) {           //check if NSIRQ is enabled for this core
+                timer_interrupt_handler();
+            }
+            else {
+                printk("unknown irq \r\n");
+                while (1) { }
+            }
+            break;    
         default:
             printk("unknown exception\r\n");
             while (1) { }

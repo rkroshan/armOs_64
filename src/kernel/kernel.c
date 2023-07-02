@@ -1,6 +1,7 @@
 #include "uart/uart.h"
 #include "utils/utils.h"
 #include "utils/assert.h"
+#include "timer/generic_timer.h"
 
 /*uart testing*/
 void uart_test(void)
@@ -22,16 +23,29 @@ void sync_error_test(void)
     printk("This message shouldn't be printed\r\n");
 }
 
+/*generic timer test*/
+void generic_timer_test(void)
+{
+    init_timer();
+    enable_irq();
+}
+
 void kernel_main()
 {
     /*check current exception level*/
     printk("Current EL is EL%u\n",(uint64_t)get_el());
+
     /*uart testing*/
     uart_test();
+
     /*assert testing*/
     ASSERT(1);
+
     /*Sync error test*/
-    sync_error_test();
+    // sync_error_test();
+
+    /*generic timer test*/
+    generic_timer_test();
     while(1)
     {
         //loop infinite
