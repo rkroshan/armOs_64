@@ -27,9 +27,9 @@ switch_to_el1:
     msr spsr_el2, x0
 
     adr x0, el1_entry           //get addr of el1_entry label first instruction
-    msr elr_el2, x0             //set the return addr to el1_entry, this is copied to LR register on ret
+    msr elr_el2, x0             //set the return addr to el1_entry, this is copied to PC register on ret
     eret
-    
+
 el1_entry:
     mov sp, #0x80000            //move the stack pointer to 0x80000, above which boot code will lie
 init_bss_section:
@@ -38,6 +38,11 @@ init_bss_section:
     sub x2, x1, x0              //x2 hold size of bss section x2 = x1-x0
     mov x1, #0                  //x1 hold value to set x1 = 0
     bl memset                   //memset(x0,x1,x2)
+
+setup_el1_vbar:
+    ldr x0, =vector_table_el1
+    msr vbar_el1, x0            //setup el1 aarch64 vector table
+
 jmp_to_kernel_main:
     bl kernel_main              //jmp to kernel main C function
     b end

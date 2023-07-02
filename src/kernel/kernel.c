@@ -14,6 +14,14 @@ void uart_test(void)
     printk("Testing string : %s\n","this is pretty cool\n");
 }
 
+/*Synchronous Error handling testing*/
+void sync_error_test(void)
+{
+    char* p = (char*)0xffff000000000000;
+    *p = 1; //not possible address is out of range
+    printk("This message shouldn't be printed\r\n");
+}
+
 void kernel_main()
 {
     /*check current exception level*/
@@ -22,6 +30,8 @@ void kernel_main()
     uart_test();
     /*assert testing*/
     ASSERT(1);
+    /*Sync error test*/
+    sync_error_test();
     while(1)
     {
         //loop infinite
