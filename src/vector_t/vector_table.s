@@ -36,11 +36,11 @@ current_el1_spn_serror:
 
 .balign 0x80
 lower_el1_aarch64_sync:
-    b error
+    b sync_handler
 
 .balign 0x80
 lower_el1_aarch64_irq:
-    b error
+    b irq_handler
 
 .balign 0x80
 lower_el1_aarch64_fiq:

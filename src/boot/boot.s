@@ -45,4 +45,14 @@ setup_el1_vbar:
 
 jmp_to_kernel_main:
     bl kernel_main              //jmp to kernel main C function
+
+switch_to_el0:
+    mov x0, #0
+    msr spsr_el1, x0            //DAIF enabled, mode set to 0, so change to El0 exception
+    adr x0, el0_entry
+    msr elr_el1, x0
+    eret
+
+el0_entry: 
+    // wfi                       //simulating sync error at el0 since wfi is illegal instruction there
     b end

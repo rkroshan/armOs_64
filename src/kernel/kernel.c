@@ -59,8 +59,8 @@ void kernel_main()
     /*Enable irq*/
     enable_irq();
 
-    while(1)
-    {
-        //loop infinite
-    }
+    // while(1)
+    // {
+    //     //loop infinite
+    // }
 }
