@@ -1,7 +1,11 @@
 #ifndef __UART_H__
 #define __UART_H__
 
-#define IO_BASE_ADDR    0x3f200000
+#include "irq/irq.h"
+
+/*For Raspi 3b*/
+#define IO_BASE_ADDR 0x3f200000
+
 /*UART DATA Register*/
 #define UART0_DR        IO_BASE_ADDR + 0x1000
 /*UART Flag Register*/
@@ -16,6 +20,10 @@
 #define UART0_IBRD      IO_BASE_ADDR + 0x1024
 /*UART Interrupt Mask Control Register*/
 #define UART0_IMSC      IO_BASE_ADDR + 0x1038
+/*UART Interrupt Mask Interrupt Status Register*/
+#define UART0_MIS       IO_BASE_ADDR + 0x1040
+/*UART Interrupt Clear Register*/
+#define UART0_ICR       IO_BASE_ADDR + 0x1044
 
 /*read a character from uart*/
 unsigned char read_char(void);
@@ -25,5 +33,7 @@ void write_char(unsigned char c);
 void write_string(const char *string);
 /*initialize uart*/
 void init_uart(void);
+/*Uart Interrupt Handler*/
+void uart_interrupt_handler(void);
 
 #endif

@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include "utils/utils.h"
 #include "timer/generic_timer.h"
+#include "irq/irq.h"
+#include "uart/uart.h"
 
 void exception_handler(uint64_t numid, uint64_t esr, uint64_t elr)
 {
@@ -14,6 +16,11 @@ void exception_handler(uint64_t numid, uint64_t esr, uint64_t elr)
             irq = inw(CNTP_STATUS_EL0); //check the interrupt source enabled for this core
             if (irq & (1 << 1)) {           //check if NSIRQ is enabled for this core
                 timer_interrupt_handler();
+            }
+            else if ( get_irq_number() & (1 << 19))
+            {
+                //it is Uart Interrupt
+                uart_interrupt_handler();
             }
             else {
                 printk("unknown irq \r\n");

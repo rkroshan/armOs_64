@@ -2,6 +2,7 @@
 #include "utils/utils.h"
 #include "utils/assert.h"
 #include "timer/generic_timer.h"
+#include "irq/irq.h"
 
 /*uart testing*/
 void uart_test(void)
@@ -27,7 +28,12 @@ void sync_error_test(void)
 void generic_timer_test(void)
 {
     init_timer();
-    enable_irq();
+}
+
+/*Enable Interrupt Controller*/
+void IC_init()
+{
+    init_interrupt_controller();
 }
 
 void kernel_main()
@@ -38,6 +44,9 @@ void kernel_main()
     /*uart testing*/
     uart_test();
 
+    /*Enable Interrupt Controller*/
+    IC_init();
+
     /*assert testing*/
     ASSERT(1);
 
@@ -45,7 +54,11 @@ void kernel_main()
     // sync_error_test();
 
     /*generic timer test*/
-    generic_timer_test();
+    // generic_timer_test();
+
+    /*Enable irq*/
+    enable_irq();
+
     while(1)
     {
         //loop infinite
