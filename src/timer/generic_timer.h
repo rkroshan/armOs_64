@@ -6,6 +6,15 @@
 /*generic interrupt time base addr core 0 , cortex A7*/
 #define CNTP_EL0	        (0x40000040)
 #define CNTP_STATUS_EL0     (0x40000060)
+
+#ifdef RASPI4
+#define TIMER_BASE_ADDR     0xfe000000
+#define TIMER_LOAD          (TIMER_BASE_ADDR + 0xB400)
+#define TIMER_CTL           (TIMER_BASE_ADDR + 0xB408)
+#define TIMER_ACK           (TIMER_BASE_ADDR + 0xB40C)
+#define TIMER_MSKIRQ        (TIMER_BASE_ADDR + 0xB414)
+#define TIMER_PREDIV        (TIMER_BASE_ADDR + 0xB41c)
+#endif
  
 void enable_timer(void);
 uint32_t read_timer_status(void);

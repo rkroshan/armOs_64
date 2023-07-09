@@ -54,13 +54,13 @@ void kernel_main()
     // sync_error_test();
 
     /*generic timer test*/
-    // generic_timer_test();
+    generic_timer_test();
 
     /*Enable irq*/
     enable_irq();
 
-    // while(1)
-    // {
-    //     //loop infinite
-    // }
+    while(1)
+    {
+        //loop infinite
+    }
 }

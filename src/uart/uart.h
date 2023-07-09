@@ -3,8 +3,14 @@
 
 #include "irq/irq.h"
 
+#ifdef RASPI3B
 /*For Raspi 3b*/
 #define UART_BASE_ADDR (IO_BASE_ADDR + 0x200000)
+#elif RASPI4
+#define UART_BASE_ADDR (0x3f000000 + 0x200000)
+#else
+#define UART_BASE_ADDR (0x3f000000 + 0x200000)
+#endif
 
 /*UART DATA Register*/
 #define UART0_DR        UART_BASE_ADDR + 0x1000

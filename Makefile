@@ -7,7 +7,7 @@ export CC = aarch64-linux-gnu-gcc
 export LD = aarch64-linux-gnu-ld
 export OBJCPY =  aarch64-linux-gnu-objcopy
 export INCLUDES = -I$(SRC_DIRECTORY)
-export CFLAGS = -g -std=c99 -ffreestanding -mgeneral-regs-only
+export CFLAGS = -g -std=c99 -ffreestanding -mgeneral-regs-only -DRASPI3B=1
 export LDFLAGS = -nostdlib
 
 export KERNEL_ELF = kernel.elf
