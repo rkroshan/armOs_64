@@ -2,9 +2,10 @@
 #define __IRQ_H__
 
 #include <stdint.h>
+#include "utils/memory.h"
 
 /*For Raspi 3b*/
-#define IO_BASE_ADDR 0x3f000000
+#define IO_BASE_ADDR P2V(0x3f000000)
 
 /*Refer Interrupt Section Arm Peripheral 2837 doc*/
 #define IRQ_BASIC_PENDING	(IO_BASE_ADDR + 0xB200)

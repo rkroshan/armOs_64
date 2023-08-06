@@ -2,10 +2,11 @@
 #define __GENERIC_TIMER_H__
 
 #include <stdint.h>
+#include "utils/memory.h"
 
 /*generic interrupt time base addr core 0 , cortex A7*/
-#define CNTP_EL0	        (0x40000040)
-#define CNTP_STATUS_EL0     (0x40000060)
+#define CNTP_EL0	        (P2V(0x40000040))
+#define CNTP_STATUS_EL0     (P2V(0x40000060))
  
 void enable_timer(void);
 uint32_t read_timer_status(void);

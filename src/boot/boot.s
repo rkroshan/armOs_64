@@ -32,6 +32,9 @@ switch_to_el1:
 
 el1_entry:
     mov sp, #0x80000            //move the stack pointer to 0x80000, above which boot code will lie
+setup_mmu:
+    bl setup_vm
+    bl enable_mmu
 init_bss_section:
     ldr x0, =bss_start          //get bss_start in x0
     ldr x1, =bss_end            //get bss_end in x1
@@ -43,8 +46,12 @@ setup_el1_vbar:
     ldr x0, =vector_table_el1
     msr vbar_el1, x0            //setup el1 aarch64 vector table
 
+update_sp_mmu_enable:
+    mov x0, #0xffff000000000000
+    add sp, sp, x0              //kernel is at 0xffff00000080000, so below it can be sp
 jmp_to_kernel_main:
-    bl kernel_main              //jmp to kernel main C function
+    ldr x0, =kernel_main        //need to get virtual address of kernel_main
+    blr x0                      //jmp to kernel main C function
 
 switch_to_el0:
     mov x0, #0
