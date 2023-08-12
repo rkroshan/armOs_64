@@ -9,7 +9,7 @@ void exception_handler(uint64_t numid, uint64_t esr, uint64_t elr)
     uint32_t irq;
     switch (numid) {
         case 1:
-            printk("sync error at %x: %x\r\n", elr, esr);
+            printk("sync error at elr:%x esr:%x\r\n", elr, esr);
             while (1) { }
             break;
         case 2:

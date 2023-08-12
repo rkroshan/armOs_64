@@ -3,6 +3,7 @@
 #include "utils/assert.h"
 #include "timer/generic_timer.h"
 #include "irq/irq.h"
+#include "utils/memory.h"
 
 /*uart testing*/
 void uart_test(void)
@@ -36,6 +37,12 @@ void IC_init()
     init_interrupt_controller();
 }
 
+/*initialize free heap memory list*/
+void HMem_init()
+{
+    init_memory();
+}
+
 void kernel_main()
 {
     /*check current exception level*/
@@ -44,6 +51,9 @@ void kernel_main()
     /*uart testing*/
     uart_test();
 
+    /*Heap Free Memory Init*/
+    HMem_init();
+    
     /*Enable Interrupt Controller*/
     IC_init();
 
