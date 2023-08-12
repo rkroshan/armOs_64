@@ -2,7 +2,7 @@
 #define __MEMORY_H__
 
 #include <stdint.h>
-
+#include <stdbool.h>
 /*
 Memory Division:
 0-2MB : kernel memory
@@ -25,6 +25,25 @@ struct Page {
 #define HEAP_MEMORY_END     P2V(0x30000000)
 #define PAGE_SIZE           (2*1024*1024)
 
+/*Page Global Directory entry addr*/
+#define PDE_ADDR(p) ((uint64_t)p & 0xfffffffff000)
+/*Physical Page entry addr*/
+#define PTE_ADDR(p) ((uint64_t)p & 0xffffffe00000)
+
+/*Memory Attributes*/
+/*Valid Entry*/
+#define ENTRY_V         (1 << 0)
+/*Nested Table Entry*/
+#define TABLE_ENTRY     (1 << 1)
+/*Bloack Entry i.e pointing to physical page*/
+#define BLOCK_ENTRY     (0 << 1)
+/*is entry accessible ?*/
+#define ENTRY_ACCESSED  (1 << 10)
+/*Memory type as Normal memory*/
+#define NORMAL_MEMORY   (1 << 2)
+/*Memory type as Device Memory*/
+#define DEVICE_MEMORY   (0 << 2)
+
 /*Page align up PA_UP can also be done as (((uint64_t)v + PAGE_SIZE - 1) & 0x1FFFFF)*/
 #define PA_UP(v)    ((((uint64_t)v + PAGE_SIZE - 1) >> 21) << 21)
 /*Page align down PA_DOWN can also be done as ((uint64_t)v & 0x1FFFFF)*/
@@ -36,5 +55,11 @@ void* kalloc(void);
 void kfree(uint64_t v);
 /*functional call to setup free up memory linked list and check amount of free mem we have as heap*/
 void init_memory(void);
+/*similar to mmap, map virtual addr to physical addr along with attributes, map contains ttbr*/
+bool map_page(uint64_t map, uint64_t v, uint64_t pa, uint64_t attribute);
+/*setup ttbr0_el1*/
+void switch_vm(uint64_t map);
+/*setup user virtual memory*/
+bool setup_uvm(void);
 
 #endif

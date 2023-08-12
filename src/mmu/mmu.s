@@ -8,6 +8,16 @@
 
 .global enable_mmu
 .global setup_vm
+.global load_pgd
+
+
+load_pgd:               //load ttbr0_el1 with pgd for user space and invalidate the caches
+    msr ttbr0_el1, x0
+    tlbi vmalle1is      //Invalidate all stage 1 translations used at EL1
+    dsb ish             //Data Synchronization Barrier acts as a special kind of memory barrier. ISB: only for inner shareable domain
+    isb                 //Instruction Synchronization Barrier
+
+    ret
 
 //enable mmu function
 enable_mmu:
