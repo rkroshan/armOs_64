@@ -61,5 +61,9 @@ bool map_page(uint64_t map, uint64_t v, uint64_t pa, uint64_t attribute);
 void switch_vm(uint64_t map);
 /*setup user virtual memory*/
 bool setup_uvm(void);
+/*Free the Physical page mapped to the VA*/
+void free_page(uint64_t map, uint64_t vstart);
+/*Free the complete VM memory along with Page Tables*/
+void free_vm(uint64_t map);
 
 #endif

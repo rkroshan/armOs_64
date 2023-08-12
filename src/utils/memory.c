@@ -75,7 +75,7 @@ static uint64_t* find_pgd_entry(uint64_t map, uint64_t v, int alloc, uint64_t at
         addr = (void*)P2V(PDE_ADDR(ptr[index])); /*return the VA and clearing the attributes*/
     }
     else if (alloc == 1) { /*if entyr is not valid and asked to allocate entry*/
-        addr = kalloc(); /*allocate one page = PAGE_size = 4096 bytes = 1 PGD  = 4096 PUD entries*/
+        addr = kalloc(); /*allocate one page = PAGE_size */
         if (addr != NULL) {
             memset(addr, 0, PAGE_SIZE); /*clear the mem data*/
             ptr[index] = (V2P(addr) | attribute | TABLE_ENTRY); /*set PA with attr and mark it as a nested table entry*/
@@ -100,7 +100,7 @@ static uint64_t* find_pud_entry(uint64_t map, uint64_t v, int alloc, uint64_t at
         addr = (void*)P2V(PDE_ADDR(ptr[index])); /* since value the PUD index contains is physical addr, so need to convert to VA, also clearing the attributes and then return addr*/
     }
     else if (alloc == 1) { /*if entyr is not valid and asked to allocate entry*/
-        addr = kalloc(); /*allocate one page = PAGE_size = 4096 bytes = 1 PUD  = 4096 PMD entries*/
+        addr = kalloc(); /*allocate one page = PAGE_size */
         if (addr != NULL) { 
             memset(addr, 0, PAGE_SIZE); /*clear the mem data*/
             ptr[index] = (V2P(addr) | attribute | TABLE_ENTRY); /*set PA with attr and mark it as a nested table entry*/
@@ -130,6 +130,70 @@ bool map_page(uint64_t map, uint64_t v, uint64_t pa, uint64_t attribute)
     ptr[index] = (pa | attribute | BLOCK_ENTRY); /*set the value for this addr as PA with attr provided and set it as Block entry*/
 
     return true;
+}
+
+void free_page(uint64_t map, uint64_t vstart)
+{
+    unsigned int index;
+    uint64_t *ptr = NULL;
+
+    ASSERT(vstart % PAGE_SIZE == 0);
+
+    ptr = find_pud_entry(map, vstart, 0, 0); /*find the PUD entry for the VA*/
+
+    if (ptr != NULL) {
+        index = (vstart >> 21) & 0x1ff; /*get the PMD index*/
+
+        if (ptr[index] & ENTRY_V) { /*if entry is Valid*/
+            kfree(P2V(PTE_ADDR(ptr[index]))); /*free the page pointed by PMD index*/
+            ptr[index] = 0; /*set as invalid for the entry*/
+        }
+    }
+}
+
+static void free_pmd(uint64_t map)
+{
+    uint64_t *pgd = (uint64_t*)map; /*&pgd[0]*/
+    uint64_t *pud = NULL;
+
+    for (int i = 0; i < 512; i++) { /*loop to get PUD entries addr*/
+        if (pgd[i] & ENTRY_V) { /*if entry is valid*/
+            pud = (uint64_t*)P2V(PDE_ADDR(pgd[i])); /*get the virtual addr for the PA for PUD entry and remove attributes*/
+
+            for (int j = 0; j < 512; j++) { /*loop to get PMD entries addr*/
+                if (pud[j] & ENTRY_V) { /*if entry is valid, free up the memory pointed by PUD entry*/
+                    kfree(P2V(PDE_ADDR(pud[j])));
+                    pud[j] = 0; /*set vale as INVALID for the entry*/
+                }
+            }
+        }
+    }
+}
+
+static void free_pud(uint64_t map)
+{
+    uint64_t *ptr = (uint64_t*)map; /*&pgd[0]*/
+
+    for (int i = 0; i < 512; i++) { /*loop to get PUD entries addr*/
+        if (ptr[i] & ENTRY_V) { /*if entry is valid free up the PUD table pointed by PGD entry*/
+            kfree(P2V(PDE_ADDR(ptr[i]))); /*free up PAGE_Size memory*/
+            ptr[i] = 0; /*set vale as INVALID for the entry*/
+        }
+    }
+}
+
+static void free_pgd(uint64_t map)
+{
+    kfree(map);
+}
+
+void free_vm(uint64_t map)
+{
+    /*Note to use thi function only on VM memory created via Kalloc because PAGE_SIZE=2MB but tables entries at max needs 4KB*/
+    // free_page(map, 0x400000); /*free up the page at 4MB*/
+    // free_pmd(map); /*Free up the PMD pages*/
+    // free_pud(map); /*Free up the PUD pages*/
+    // free_pgd(map); /*Free up the PGD pages*/
 }
 
 bool setup_uvm(void)
