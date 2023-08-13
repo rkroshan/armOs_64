@@ -28,11 +28,17 @@ clean:
 
 make_os:
 	dd if=$(BIN_DIRECTORY)/$(KERNEL_BIN) > $(BIN_DIRECTORY)/$(OS_BIN)
-#50MB fat16 file system, we will place it on top of kernel.img and then map it to virtual memory, 
+#9MB fat16 file system, we will place it on top of kernel.img and then map it to virtual memory, 
 #since currently disk read write functionality is not available we will read write from ram by booting the complete File system on to ram during bootup
-	dd if=/dev/zero bs=512 count=102400 > $(BIN_DIRECTORY)/$(FS16_IMG)
+	dd if=/dev/zero bs=512 count=18432 > $(BIN_DIRECTORY)/$(FS16_IMG)
 #format it as fat16 and place it in os binary
 	mkfs.fat $(BIN_DIRECTORY)/$(FS16_IMG) -F 16
+#add a text file into the FS
+	echo "Hello Kernel This is Roshan" > $(BUILD_DIRECTORY)/textfile.txt
+	sudo mount $(BIN_DIRECTORY)/fs16.img /mnt/
+	sudo cp $(BIN_DIRECTORY)/textfile.txt /mnt/
+	sudo umount /mnt
+#append the FS in the OS binary
 	dd if=$(BIN_DIRECTORY)/$(FS16_IMG) >> $(BIN_DIRECTORY)/$(OS_BIN)
 	
 
@@ -41,3 +47,7 @@ run: run_qemu
 
 run_qemu:
 	qemu-system-aarch64 -M raspi3b -serial stdio -kernel $(BIN_DIRECTORY)/$(OS_BIN)
+
+run_gdb:
+#qemu-system-aarch64 -M raspi3b -S -gdb stdio -kernel bin/os.bin
+	gdb-multiarch -x gdbx

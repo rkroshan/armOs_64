@@ -4,6 +4,7 @@
 #include "timer/generic_timer.h"
 #include "irq/irq.h"
 #include "utils/memory.h"
+#include "fs/fs.h"
 
 /*uart testing*/
 void uart_test(void)
@@ -43,6 +44,12 @@ void HMem_init()
     init_memory();
 }
 
+/*fat16 file system bootup test*/
+void fs16_init()
+{
+    init_fs();
+}
+
 void kernel_main()
 {
     /*check current exception level*/
@@ -56,6 +63,9 @@ void kernel_main()
     
     /*Enable Interrupt Controller*/
     IC_init();
+
+    /*fat16 file system bootup test*/
+    fs16_init();
 
     /*assert testing*/
     ASSERT(1);

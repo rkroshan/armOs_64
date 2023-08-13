@@ -1,6 +1,9 @@
 .section .text_boot
 .global start
 
+.equ FS_BASE, 0xffff000030000000    //virtual addr for FS starting addr
+.equ FS_SIZE, 512*18432             //9MB
+
 start:
 //currently we will work on cpu0 and put other cpus into sleep
 //to do that we will read the cpu-number a.k.a cpu-affinity from last 2 bits of mpdir_el1 reg
@@ -35,6 +38,11 @@ el1_entry:
 setup_mmu:
     bl setup_vm
     bl enable_mmu
+setup_fs:
+    ldr x0, =FS_BASE            //load the FS_Base VA
+    ldr x1, =bss_start          //bss_start will be the starting point where the FS is loaded in os.bin, since actual data is upto .data section after which everything should be 0, where the FS should be in os.bin
+    ldr x2, =FS_SIZE            
+    bl memcpy                   //memcpy the FS staring from FS_BASE upto FS_SIZE
 init_bss_section:
     ldr x0, =bss_start          //get bss_start in x0
     ldr x1, =bss_end            //get bss_end in x1
