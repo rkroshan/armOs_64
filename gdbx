@@ -1,3 +1,3 @@
-add-symbol-file bin/os.bin -readnow
+add-symbol-file bin/kernel.elf -readnow
 break start
 target remote | qemu-system-aarch64 -M raspi3b -S -gdb stdio -kernel bin/os.bin

@@ -34,7 +34,8 @@ make_os:
 #format it as fat16 and place it in os binary
 	mkfs.fat $(BIN_DIRECTORY)/$(FS16_IMG) -F 16
 #add a text file into the FS
-	echo "Hello Kernel This is Roshan" > $(BUILD_DIRECTORY)/textfile.txt
+#need to change the file name as fs16 stores filename is all caps ? TODO: need to check that but currently it is what it is
+	echo "Hello Kernel This is Roshan" > $(BUILD_DIRECTORY)/TEXTFILE.TXT
 	sudo mount $(BIN_DIRECTORY)/fs16.img /mnt/
 	sudo cp $(BIN_DIRECTORY)/textfile.txt /mnt/
 	sudo umount /mnt

@@ -5,6 +5,7 @@
 #include "irq/irq.h"
 #include "utils/memory.h"
 #include "fs/fs.h"
+#include <stddef.h>
 
 /*uart testing*/
 void uart_test(void)
@@ -50,6 +51,19 @@ void fs16_init()
     init_fs();
 }
 
+/*fat16 load file data test*/
+void fs16_load_file()
+{
+    void *p = kalloc();
+    ASSERT(p != NULL);
+
+    if (load_file("TEXTFILE.TXT", (uint64_t)p) == 0) {
+        printk("File data: %s\r\n", p);
+    }else{
+        printk("No file found\n");
+    }
+}
+
 void kernel_main()
 {
     /*check current exception level*/
@@ -66,6 +80,9 @@ void kernel_main()
 
     /*fat16 file system bootup test*/
     fs16_init();
+
+    /*fs16 load file test*/
+    fs16_load_file();
 
     /*assert testing*/
     ASSERT(1);
