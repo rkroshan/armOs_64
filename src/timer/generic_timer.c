@@ -16,9 +16,9 @@ void timer_interrupt_handler(void)
     uint32_t status = read_timer_status();
     if (status & (1 << 2)) {        //check if status bit in control reg is set, then it is an irq
         ticks++;
-        if (ticks % 100 == 0) {
-            printk("timer irq: %d \r\n", ticks);
-        }
+        // if (ticks % 100 == 0) {
+        //     printk("timer irq: %d \r\n", ticks);
+        // }
 
         set_timer_interval(timer_interval); //then we reset the timer interval, since TVAL reg dec as CNTP increments so need to reset
     }

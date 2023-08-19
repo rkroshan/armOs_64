@@ -61,4 +61,6 @@ jmp_to_kernel_main:
     ldr x0, =kernel_main        //need to get virtual address of kernel_main
     blr x0                      //jmp to kernel main C function
 
+halt:
+    wfi
     b end

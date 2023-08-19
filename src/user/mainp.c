@@ -2,6 +2,14 @@
 
 int main(void)
 {
-    printf("Hey there I am a user process\r\n");
+    uint64_t counter = 0;
+
+    while (1) {
+        if (counter % 10000000 == 0) {
+            printf("User process %u\r\n", counter);
+        }
+        counter++;
+    }
+
     return 0;
 }

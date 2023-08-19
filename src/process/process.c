@@ -7,8 +7,14 @@
 
 static struct Process process_table[NUM_PROC];
 static int pid_num = 1; /*pid_num starts from 1 excluding idle process*/
+static struct ProcessControl pc;
 void pstart(struct TrapFrame *tf);
 uint64_t read_pgd();
+
+struct ProcessControl* get_pc(void)
+{
+    return &pc;
+}
 
 static struct Process* find_unused_process(void)
 {
@@ -28,13 +34,17 @@ static struct Process* find_unused_process(void)
 static void init_idle_process(void)
 {
     struct Process *process;
+    struct ProcessControl *process_control;
 
     process = find_unused_process();
     ASSERT(process == &process_table[0]); /*it should be the first process*/
 
     process->state = PROC_RUNNING; /*set state as runnnig*/
     process->pid = 0;
-    process->page_map = P2V(read_pgd()); 
+    process->page_map = P2V(read_pgd());
+
+    process_control = get_pc();
+    process_control->current_process = process; 
 }
 
 static struct Process* alloc_new_process(void)
@@ -51,6 +61,8 @@ static struct Process* alloc_new_process(void)
     process->state = PROC_INIT; /*set process as init*/
     process->pid = pid_num++; /*increment the pid*/
 
+    process->context = process->stack + PAGE_SIZE - sizeof(struct TrapFrame) - 12*8; /*space for 12 calle saved registers*/
+    *(uint64_t*)(process->context + 11*8) = (uint64_t)trap_return; /*setting x30 to trap_return function so that on ret pc is set to trapreturn*/
     process->tf = (struct TrapFrame*)(process->stack + PAGE_SIZE - sizeof(struct TrapFrame)); /*set pointer to trapframe at top of stack, so pointer to stack will point to trapframe as well*/
     process->tf->elr = 0x400000; /*this is a VA where every user process will be mapped to return to el0*/
     process->tf->sp0 = 0x400000 + PAGE_SIZE; /*and the stack pointer will starting from one page above*/
@@ -67,19 +79,72 @@ static struct Process* alloc_new_process(void)
 static void init_user_process(void)
 {
     struct Process *process;
+    struct ProcessControl *process_control;
+    struct HeadList *list;
 
     process = alloc_new_process();
     ASSERT(process != NULL);
 
     ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN")); /*setup the user process at the process map addr*/
+
+    process_control = get_pc(); /*get the process control*/
+    list = &process_control->ready_list; /*put the process in ready list*/
+
+    process->state = PROC_READY; /*proc should be ready state*/
+    append_list_tail(list, (struct List*)process); /*add the process in the process control ready list*/
 }
 
-/*launch user processes*/
-void launch_user_process(void)
+static void switch_process(struct Process *prev, struct Process *current)
 {
-    /*load the user pgd into ttbr0_el1*/
-    switch_vm(process_table[1].page_map);
-    pstart(process_table[1].tf); /*this way it will eret to user mode el0 with return address as elr, as currently it is in el1*/
+    switch_vm(current->page_map); /*load the ttb0_el1 with current process pgd*/
+    swap(&prev->context, current->context); /*swap the sp*/
+}
+
+static void schedule(void)
+{
+    struct Process *prev_proc;
+    struct Process *current_proc;
+    struct ProcessControl *process_control;
+    struct HeadList *list;
+
+    process_control = get_pc(); /*get the current process control*/
+    list = &process_control->ready_list;
+    prev_proc = process_control->current_process;
+
+    if (is_list_empty(list)) { //we should not come here via yield 
+        current_proc = &process_table[0]; //set the current process to idle process
+    }
+    else {
+        current_proc = (struct Process*)remove_list_head(list); //set the current procee as process on list head
+    }
+
+    current_proc->state = PROC_RUNNING; //set state as running
+    process_control->current_process = current_proc;
+
+    switch_process(prev_proc, current_proc); //switch the process
+}
+
+void yield(void)
+{
+    struct Process *process;
+    struct ProcessControl *process_control;
+    struct HeadList *list;
+
+    process_control = get_pc(); /*get the current process control*/
+    list = &process_control->ready_list;
+
+    if (is_list_empty(list)) { /*if list is empty then return so as to continue running the current ptocess*/
+        return;
+    }
+
+    process = process_control->current_process; /*take the current process and put it into ready state*/
+    process->state = PROC_READY;
+
+    if (process->pid != 0) {
+        append_list_tail(list, (struct List*)process); /*add the current process into ready list*/
+    }
+
+    schedule(); /*schedule to switch to another process*/
 }
 
 void init_process(void)
@@ -87,6 +152,4 @@ void init_process(void)
     init_idle_process(); /*initalize the idle process*/
     /*generally idle process only required ti be spawned but for example sake, it can a idle process as well*/
     init_user_process(); /*initialize the user process*/
-
-    launch_user_process();
 }
