@@ -9,7 +9,12 @@
 .global enable_mmu
 .global setup_vm
 .global load_pgd
+.global read_pgd
 
+
+read_pgd:               //read the ttbr0_el1
+    mrs x0, ttbr0_el1
+    ret
 
 load_pgd:               //load ttbr0_el1 with pgd for user space and invalidate the caches
     msr ttbr0_el1, x0

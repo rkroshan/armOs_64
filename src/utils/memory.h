@@ -43,6 +43,8 @@ struct Page {
 #define NORMAL_MEMORY   (1 << 2)
 /*Memory type as Device Memory*/
 #define DEVICE_MEMORY   (0 << 2)
+/*Memory access as User*/
+#define USER            (1 << 6)
 
 /*Page align up PA_UP can also be done as (((uint64_t)v + PAGE_SIZE - 1) & 0x1FFFFF)*/
 #define PA_UP(v)    ((((uint64_t)v + PAGE_SIZE - 1) >> 21) << 21)
@@ -59,8 +61,8 @@ void init_memory(void);
 bool map_page(uint64_t map, uint64_t v, uint64_t pa, uint64_t attribute);
 /*setup ttbr0_el1*/
 void switch_vm(uint64_t map);
-/*setup user virtual memory*/
-bool setup_uvm(void);
+/*map the file data onto VA 0x400000 getting pgd from map VA*/
+bool setup_uvm(uint64_t map, char *file_name);
 /*Free the Physical page mapped to the VA*/
 void free_page(uint64_t map, uint64_t vstart);
 /*Free the complete VM memory along with Page Tables*/

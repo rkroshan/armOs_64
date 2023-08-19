@@ -2,6 +2,7 @@
 #include "utils/assert.h"
 #include "utils/print.h"
 #include "utils/utils.h"
+#include "fs/fs.h"
 #include <stddef.h>
 
 /*static struct to hold free page linked list*/
@@ -189,16 +190,33 @@ static void free_pgd(uint64_t map)
 
 void free_vm(uint64_t map)
 {
-    /*Note to use thi function only on VM memory created via Kalloc because PAGE_SIZE=2MB but tables entries at max needs 4KB*/
-    // free_page(map, 0x400000); /*free up the page at 4MB*/
-    // free_pmd(map); /*Free up the PMD pages*/
-    // free_pud(map); /*Free up the PUD pages*/
-    // free_pgd(map); /*Free up the PGD pages*/
+    /*Note to use this function only on VM memory created via Kalloc because PAGE_SIZE=2MB but tables entries at max needs 4KB*/
+    free_page(map, 0x400000); /*free up the page at 4MB*/
+    free_pmd(map); /*Free up the PMD pages*/
+    free_pud(map); /*Free up the PUD pages*/
+    free_pgd(map); /*Free up the PGD pages*/
 }
 
-bool setup_uvm(void)
+bool setup_uvm(uint64_t map, char *file_name)
 {
     bool status = false;
+    void *page = kalloc();
+
+    if (page != NULL) {
+        memset(page, 0, PAGE_SIZE);
+        status = map_page(map, 0x400000, V2P(page), ENTRY_V | USER | NORMAL_MEMORY | ENTRY_ACCESSED);
+
+        if (status == true) {
+            if (load_file(file_name, (uint64_t)page) == -1) {
+                free_vm(map);
+                return false;
+            }
+        }
+        else {
+            kfree((uint64_t)page);
+            free_vm(map);
+        }
+    }
 
     return status;
 }

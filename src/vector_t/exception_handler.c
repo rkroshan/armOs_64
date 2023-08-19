@@ -1,15 +1,16 @@
-#include <stdint.h>
+#include "exception_handler.h"
 #include "utils/utils.h"
 #include "timer/generic_timer.h"
 #include "irq/irq.h"
 #include "uart/uart.h"
+#include "syscall/syscall.h"
 
-void exception_handler(uint64_t numid, uint64_t esr, uint64_t elr)
+void exception_handler(struct TrapFrame *tf)
 {
     uint32_t irq;
-    switch (numid) {
+    switch (tf->trapno) {
         case 1:
-            printk("sync error at elr:%x esr:%x\r\n", elr, esr);
+            printk("sync error at elr:%x esr:%x\r\n", tf->elr, tf->esr);
             while (1) { }
             break;
         case 2:
@@ -26,6 +27,9 @@ void exception_handler(uint64_t numid, uint64_t esr, uint64_t elr)
                 printk("unknown irq \r\n");
                 while (1) { }
             }
+            break;
+        case 3:
+            system_call(tf);
             break;    
         default:
             printk("unknown exception\r\n");

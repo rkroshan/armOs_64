@@ -1,6 +1,7 @@
 #include "stdint.h"
 #include "stdarg.h"
-#include "uart/uart.h"
+
+extern int writeu(char *buffer, int buffer_size);
 
 static int read_string(char *buffer, int position, const char *string)
 {
@@ -65,14 +66,7 @@ static int decimal_to_string(char *buffer, int position, int64_t digits)
     return size;
 }
 
-void write_console(const char *buffer, int size)
-{
-    for (int i = 0; i < size; i++) {
-        write_char(buffer[i]);
-    }
-}
-
-int printk(const char *format, ...)
+int printf(const char *format, ...)
 {
     char buffer[1024];
     int buffer_size = 0;
@@ -117,7 +111,7 @@ int printk(const char *format, ...)
         }
     }
 
-    write_console(buffer, buffer_size);
+    writeu(buffer, buffer_size);
     va_end(args);
 
     return buffer_size;

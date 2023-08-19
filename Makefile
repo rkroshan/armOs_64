@@ -2,8 +2,11 @@
 export SRC_DIRECTORY=${PWD}/src
 export BIN_DIRECTORY=${PWD}/bin
 export BUILD_DIRECTORY=${PWD}/build
+export BUILD_USER_DIRECTORY=${PWD}/build/user
 
 export CC = aarch64-linux-gnu-gcc
+export DUMP = aarch64-linux-gnu-objdump
+export AR = aarch64-linux-gnu-ar
 export LD = aarch64-linux-gnu-ld
 export OBJCPY =  aarch64-linux-gnu-objcopy
 export INCLUDES = -I$(SRC_DIRECTORY)
@@ -15,6 +18,8 @@ export KERNEL_BIN = kernel.bin
 export LINKER_SCRIPT = linker.lds
 export FS16_IMG = fs16.img
 export OS_BIN = os.bin
+export INIT_BIN = init.bin
+export INIT_ELF = init.elf
 
 .PHONY: all clean build run 
 
@@ -38,6 +43,8 @@ make_os:
 	echo "Hello Kernel This is Roshan" > $(BUILD_DIRECTORY)/TEXTFILE.TXT
 	sudo mount $(BIN_DIRECTORY)/fs16.img /mnt/
 	sudo cp $(BIN_DIRECTORY)/textfile.txt /mnt/
+#push init.bin as well
+	sudo cp $(BIN_DIRECTORY)/$(INIT_BIN) /mnt/
 	sudo umount /mnt
 #append the FS in the OS binary
 	dd if=$(BIN_DIRECTORY)/$(FS16_IMG) >> $(BIN_DIRECTORY)/$(OS_BIN)
@@ -49,6 +56,9 @@ run: run_qemu
 run_qemu:
 	qemu-system-aarch64 -M raspi3b -serial stdio -kernel $(BIN_DIRECTORY)/$(OS_BIN)
 
-run_gdb:
+gdb:
 #qemu-system-aarch64 -M raspi3b -S -gdb stdio -kernel bin/os.bin
 	gdb-multiarch -x gdbx
+
+dump:
+	$(DUMP) -S $(BIN_DIRECTORY)/$(KERNEL_ELF) > $(BIN_DIRECTORY)/dump.txt

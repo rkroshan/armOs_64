@@ -16,6 +16,8 @@ build: $(SUBDIR)
 
 clean:
 	rm -rf $(BUILD_DIRECTORY)/*.o
+	rm -rf $(BUILD_USER_DIRECTORY)/*.o
+	rm -rf $(BUILD_USER_DIRECTORY)/*.a
 	rm -rf $(BIN_DIRECTORY)/$(KERNEL_ELF)
 	rm -rf $(BIN_DIRECTORY)/$(KERNEL_BIN)
 

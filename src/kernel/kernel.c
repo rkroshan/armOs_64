@@ -5,6 +5,8 @@
 #include "irq/irq.h"
 #include "utils/memory.h"
 #include "fs/fs.h"
+#include "syscall/syscall.h"
+#include "process/process.h"
 #include <stddef.h>
 
 /*uart testing*/
@@ -84,6 +86,9 @@ void kernel_main()
     /*fs16 load file test*/
     fs16_load_file();
 
+    /*init_system_call();*/
+    init_system_call();
+
     /*assert testing*/
     ASSERT(1);
 
@@ -96,8 +101,6 @@ void kernel_main()
     /*Enable irq*/
     enable_irq();
 
-    while(1)
-    {
-        //loop infinite
-    }
+    /*init_process();*/
+    init_process();
 }
