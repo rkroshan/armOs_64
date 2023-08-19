@@ -9,6 +9,7 @@
 struct Process {
 	struct List *next; //holds the addr to next process in list
     int pid; /*hold the process id*/
+	int wait; /*holds the amount of time user process to wait*/
 	int state; /*holds process current state*/
 	uint64_t context; /*holds the context of callee saved registers x19-x30*/
 	uint64_t page_map; /*holds addr to process pgd*/
@@ -20,6 +21,7 @@ struct Process {
 struct ProcessControl {
 	struct Process *current_process; /*holds pointer to current running process*/
 	struct HeadList ready_list;	/*list of process in ready state to run*/
+	struct HeadList wait_list; /*list of process in wait list*/
 };
 
 /*stack size per process*/
@@ -31,6 +33,7 @@ struct ProcessControl {
 #define PROC_INIT 1
 #define PROC_RUNNING 2
 #define PROC_READY 3
+#define PROC_SLEEP 4
 
 /*initialize the process*/
 void init_process(void);
@@ -42,5 +45,9 @@ void yield(void);
 void swap(uint64_t *prev, uint64_t next);
 /*func to restore elr and spsr*/
 void trap_return(void);
+/*func to put current runnnig process to sleep*/
+void sleep(int wait);
+/*func to wake up the sleeping process back into to ready list*/
+void wake_up(int wait);
 
 #endif

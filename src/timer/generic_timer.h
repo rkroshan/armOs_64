@@ -21,5 +21,7 @@ void timer_interrupt_handler(void);
 /*IRQ enable / disable*/
 void enable_irq(void);
 void disable_irq(void);
+/*return ticks per 10ms*/
+uint64_t get_ticks(void); 
 
 #endif

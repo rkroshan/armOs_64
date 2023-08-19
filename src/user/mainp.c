@@ -2,13 +2,9 @@
 
 int main(void)
 {
-    uint64_t counter = 0;
-
     while (1) {
-        if (counter % 10000000 == 0) {
-            printf("User process %u\r\n", counter);
-        }
-        counter++;
+        printf("User process\r\n");
+        sleepu(100); /*sleep for 10ms*100 = 1s*/
     }
 
     return 0;

@@ -1,8 +1,14 @@
 #include "generic_timer.h"
 #include "utils/utils.h"
+#include "process/process.h"
 
 static uint32_t timer_interval = 0;
 static uint64_t ticks = 0;
+
+uint64_t get_ticks(void)
+{
+    return ticks;
+}
 
 void init_timer(void)
 {
@@ -16,6 +22,7 @@ void timer_interrupt_handler(void)
     uint32_t status = read_timer_status();
     if (status & (1 << 2)) {        //check if status bit in control reg is set, then it is an irq
         ticks++;
+        wake_up(-1); /*to wake up processes waiting in wait list for wait time*/
         // if (ticks % 100 == 0) {
         //     printk("timer irq: %d \r\n", ticks);
         // }

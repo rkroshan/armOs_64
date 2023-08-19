@@ -153,3 +153,37 @@ void init_process(void)
     /*generally idle process only required ti be spawned but for example sake, it can a idle process as well*/
     init_user_process(); /*initialize the user process*/
 }
+/*TODO: there is a better way to go to sleep where ticks actually set to future tick when they should wake up, so that wake up just check for wait time exceed current and add the process into list rather than continuously waking and waiting and runinng list jagron*/
+void sleep(int wait)
+{
+    struct Process *process;
+    struct ProcessControl *process_control;
+
+    process_control = get_pc();
+    process = process_control->current_process;
+    process->state = PROC_SLEEP;
+    process->wait = wait;
+    /*put the process in wait list*/
+    append_list_tail(&process_control->wait_list, (struct List*)process);
+    schedule();
+}
+
+void wake_up(int wait)
+{
+    struct Process *process;
+    struct ProcessControl *process_control;
+    struct HeadList *ready_list;
+    struct HeadList *wait_list;
+
+    process_control = get_pc();
+    ready_list = &process_control->ready_list;
+    wait_list = &process_control->wait_list;
+
+    process = (struct Process*)remove_list(wait_list, wait); /*remove the process in wait==wait*/
+
+    while (process != NULL) { /*do it for all processes if any other is waiting for same wait as well*/
+        process->state = PROC_READY;
+        append_list_tail(ready_list, (struct List*)process);
+        process = (struct Process*)remove_list(wait_list, wait);
+    }
+}
