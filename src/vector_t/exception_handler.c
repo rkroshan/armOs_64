@@ -10,11 +10,19 @@ void exception_handler(struct TrapFrame *tf)
 {
     uint32_t irq;
     uint8_t schedule=0;
-
+    struct ProcessControl *process_control;
     switch (tf->trapno) {
         case 1:
-            printk("sync error at elr:%x esr:%x\r\n", tf->elr, tf->esr);
-            while (1) { }
+            if ((tf->spsr & 0xf) == 0) {
+                process_control = get_pc();
+                printk("USER:sync error occurs in process %d\r\n", (int64_t)process_control->current_process->pid);
+                printk("USER:sync error at %x: %x\r\n", tf->elr, tf->esr);
+                exit();
+            }
+            else {
+                printk("KERNEL:sync error at %x: %x\r\n", tf->elr, tf->esr);
+                while (1) { }
+            }
             break;
         case 2:
             irq = inw(CNTP_STATUS_EL0); //check the interrupt source enabled for this core

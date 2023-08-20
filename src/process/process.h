@@ -22,6 +22,7 @@ struct ProcessControl {
 	struct Process *current_process; /*holds pointer to current running process*/
 	struct HeadList ready_list;	/*list of process in ready state to run*/
 	struct HeadList wait_list; /*list of process in wait list*/
+	struct HeadList kill_list; /*list of killed processes*/
 };
 
 /*stack size per process*/
@@ -34,6 +35,7 @@ struct ProcessControl {
 #define PROC_RUNNING 2
 #define PROC_READY 3
 #define PROC_SLEEP 4
+#define PROC_KILLED 5
 
 /*initialize the process*/
 void init_process(void);
@@ -49,5 +51,9 @@ void trap_return(void);
 void sleep(int wait);
 /*func to wake up the sleeping process back into to ready list*/
 void wake_up(int wait);
+/*func to add process into exit list and not reschedule*/
+void exit(void);
+/*func to free up process resources once pid matches*/
+void wait(int pid);
 
 #endif

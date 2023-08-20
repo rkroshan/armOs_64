@@ -187,3 +187,44 @@ void wake_up(int wait)
         process = (struct Process*)remove_list(wait_list, wait);
     }
 }
+
+void exit(void)
+{
+    struct Process *process;
+    struct ProcessControl *process_control;
+
+    process_control = get_pc();
+    process = process_control->current_process; /*get the current process*/
+    process->state = PROC_KILLED; /*set state to killed*/
+    process->wait = process->pid; /*wait = pid, for simplying the search*/
+    /*add the process in killed list*/
+    append_list_tail(&process_control->kill_list, (struct List*)process);
+
+    wake_up(-3); /*wake up any process waiting till current ticks, -3 is dummy*/
+    schedule();
+}
+
+void wait(int pid)
+{
+    struct Process *process;
+    struct ProcessControl *process_control;
+    struct HeadList *list;
+
+    process_control = get_pc();
+    list = &process_control->kill_list;
+
+    while (1) {
+        if (!is_list_empty(list)) { /*if killed list is not empty*/
+            process = (struct Process*)remove_list(list, pid); /*look out for process with pid mentioned in wait */
+            if (process != NULL) {
+                ASSERT(process->state == PROC_KILLED);
+                kfree(process->stack);  /*free up stack*/
+                free_vm(process->page_map); /*free up transaltion tables*/
+                memset(process, 0, sizeof(struct Process)); /*clean the process struct*/
+                break;
+            }
+        }
+
+        sleep(-3); /*sleep the current process for -3 ticks, means wake it up on wake_up call*/
+    }
+}

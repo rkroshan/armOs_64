@@ -1,6 +1,8 @@
 .section .text
 .global writeu
 .global sleepu
+.global exitu
+.global waitu
 
 writeu:
     sub sp, sp, #16     //push the SP 2 regs down
@@ -24,5 +26,26 @@ sleepu:
     svc #0              //svc instruction trap in lower_el1_aarch64_sync
 
     add sp, sp, #8     //restore sp
+    ret
+
+exitu:
+    mov x8, #2          //SVC for exit 
+    mov x0, #0          //no arguments
+
+    svc #0              //svc instruction trap in lower_el1_aarch64_sync
+
+    ret
+
+waitu:
+    sub sp, sp, #8      
+    mov x8, #3          //SVC for wait
+
+    str x0, [sp]        //store x0=pid
+    mov x0, #1          //num of args on stack = 1
+    mov x1, sp          //stack pointer addr in x1
+
+    svc #0
+
+    add sp, sp, #8
     ret
     

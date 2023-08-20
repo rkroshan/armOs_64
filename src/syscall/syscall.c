@@ -28,13 +28,25 @@ static int sys_sleep(int64_t *argptr)
     return 0;
 }
 
+static int sys_exit(int64_t *argptr)
+{
+    exit();
+    return 0;
+}
+
+static int sys_wait(int64_t *argptr)
+{
+    wait(argptr[0]);
+    return 0;
+}
+
 void system_call(struct TrapFrame *tf)
 {
     int64_t i = tf->x8; /*SVC number*/
     int64_t param_count = tf->x0;   /*parameter count on stack*/
     int64_t *argptr = (int64_t*)tf->x1; /*pointer to stack where boths arguments are present*/
 
-    if (param_count < 0 || i < 0 || i > 1) {
+    if (param_count < 0 || i < 0 || i > 3) {
         tf->x0 = -1;    /*if param count is neg then problem*/
         return;
     }
@@ -47,4 +59,6 @@ void init_system_call(void)
     /*initialize all syscalls in syscall array*/
     system_calls[0] = sys_write; /*to handle printf */
     system_calls[1] = sys_sleep; /*to handle sleep*/
+    system_calls[2] = sys_exit; /*to handle exit*/
+    system_calls[3] = sys_wait; /*to handle wait svc*/
 }
