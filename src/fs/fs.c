@@ -2,6 +2,11 @@
 #include "utils/print.h"
 #include "utils/assert.h"
 #include "utils/utils.h"
+#include "process/process.h"
+#include <stddef.h>
+
+static struct FCB *fcb_table;
+static struct FileDesc *file_desc_table;
 
 static struct BPB* get_fs_bpb(void)
 {
@@ -207,6 +212,114 @@ int load_file(char *path, uint64_t addr)
     return ret;
 }
 
+/*check if fcb already exist or create one and inc the count*/
+static uint32_t get_fcb(uint32_t index)
+{
+    struct DirEntry *dir_table;
+
+    if (fcb_table[index].count == 0) {
+        dir_table = get_root_directory();
+        fcb_table[index].dir_index = index;
+        fcb_table[index].file_size = dir_table[index].file_size;
+        fcb_table[index].cluster_index = dir_table[index].cluster_index;
+        memcpy(&fcb_table[index].name, &dir_table[index].name, 8);
+        memcpy(&fcb_table[index].ext, &dir_table[index].ext, 3);
+    }
+
+    fcb_table[index].count++; /*increment the open count*/
+
+    return index;
+}
+
+/*return the file size*/
+uint32_t get_file_size(struct Process *process, int fd)
+{
+    return process->file[fd]->fcb->file_size;
+}
+
+int open_file(struct Process *proc, char *path_name)
+{
+    int fd = -1;
+    int file_desc_index = -1;
+    uint32_t entry_index;
+    uint32_t fcb_index;
+
+    for (int i = 0; i < 100; i++) { /*find free fd slot in process*/
+        if (proc->file[i] == NULL) {
+            fd = i;
+            break;
+        }
+    }
+
+    if (fd == -1) {
+        return -1;
+    }
+
+    for (int i = 0; i < PAGE_SIZE / sizeof(struct FileDesc); i++) {
+        if (file_desc_table[i].fcb == NULL) { /*find free fd slot in fd table*/
+            file_desc_index = i;
+            break;
+        }
+    }
+
+    if (file_desc_index == -1) {
+        return -1;
+    }
+
+    entry_index = search_file(path_name); /*get the root directory index*/
+    if (entry_index == 0xffffffff) {
+        return -1;
+    }
+
+    fcb_index = get_fcb(entry_index); /*check if fcb already exist or create one and inc the count*/
+    memset(&file_desc_table[file_desc_index], 0, sizeof(struct FileDesc)); /*clear fd table index struct*/
+    file_desc_table[file_desc_index].fcb = &fcb_table[fcb_index]; /*assign the fd table index with the fcb we got*/
+    proc->file[fd] = &file_desc_table[file_desc_index]; /*assignt eh fd table index addr to proc fd*/
+
+    return fd;
+}
+
+/*dec the fcb open count*/
+static void put_fcb(struct FCB *fcb)
+{
+    ASSERT(fcb->count > 0);
+    fcb->count--;
+}
+
+void close_file(struct Process *proc, int fd)
+{
+    put_fcb(proc->file[fd]->fcb); /*dec the fcb open count*/
+
+    proc->file[fd]->fcb = NULL; /*clear the fd of the process as well as the fd->fcb*/
+    proc->file[fd] = NULL;
+}
+
+/*allocate one page memory for file control block*/
+static bool init_fcb(void)
+{
+    fcb_table = (struct FCB*)kalloc();
+    if (fcb_table == NULL) {
+        return false;
+    }
+
+    memset(fcb_table, 0, PAGE_SIZE);
+
+    return true;
+}
+
+/*allocate one page memory for file descriptors*/
+static bool init_file_desc(void)
+{
+    file_desc_table = (struct FileDesc*)kalloc();
+    if (file_desc_table == NULL) {
+        return false;
+    }
+
+    memset(file_desc_table, 0, PAGE_SIZE);
+
+    return true;
+}
+
 void init_fs(void)
 {
     uint8_t *p = (uint8_t*)get_fs_bpb();
@@ -218,5 +331,9 @@ void init_fs(void)
     else {
         printk("file system is loaded\r\n");
     }
+
+    /*once signature is verified initialize the fcb and fd blocks*/
+    ASSERT(init_fcb());
+    ASSERT(init_file_desc());
 }
 

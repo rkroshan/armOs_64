@@ -14,6 +14,7 @@ struct Process {
 	uint64_t context; /*holds the context of callee saved registers x19-x30*/
 	uint64_t page_map; /*holds addr to process pgd*/
 	uint64_t stack; /*holds the process stack addr*/
+	struct FileDesc *file[100]; /*at max can store 100 fd pointers*/
 	struct TrapFrame *tf; /*holds the process context regs*/
 };
 

@@ -42,16 +42,40 @@ struct DirEntry {
     uint32_t file_size;
 } __attribute__((packed));
 
+/*file control block which actually hold the file information*/
+struct FCB {
+    char name[8];
+    char ext[3];
+    uint32_t cluster_index;
+    uint32_t dir_index;
+    uint32_t file_size;
+    int count;
+};
+
+/*file descriptor struct holds the fcb which points to file and current position in file used by process*/
+struct FileDesc {
+    struct FCB *fcb;
+    uint32_t position;
+};
+
 #define FS_BASE P2V(0x30000000)
 #define ENTRY_EMPTY 0
 #define ENTRY_DELETED 0xe5
 #define MAX_FILENAME    8
 #define MAX_FILE_EXT_NAME   3
 
+struct Process;
+
 /*do basic FAT16 filesystem bootup signature validation whether FS is available or not*/
 void init_fs(void);
 /*load the data from the file present at the path onto the VA addr, note it should be less than 2MB, there is no size param check at the moment*/
 int load_file(char *path, uint64_t addr);
+/*setup the fd and fcb for the process requesting the file*/
+int open_file(struct Process *proc, char *path_name);
+/*clear the fd and fcb for the file in the process struct*/
+void close_file(struct Process *proc, int fd);
+/*return the file size mentioned by fd*/
+uint32_t get_file_size(struct Process *process, int fd);
 
 
 #endif

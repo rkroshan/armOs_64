@@ -2,11 +2,19 @@
 
 int main(void)
 {
-    char *p = (char*)0xffff000000001000; 
-    *p = 'a';/*this is kernel addr space region, it will generate translation/permission fault a.k.a data abort*/
+    int fd;
+    int size;
 
-    printf("User process\r\n");
-    sleepu(100);
+    fd = open_file("TEXTFILE.TXT");
+    if (fd == -1) {
+        printf("open file failed\r\n");
+    }
+    else {
+        size = get_file_size(fd);
+        printf("The size of the file is %d bytes\r\n", (int64_t)size);
+    }
 
+    close_file(fd);
+    
     return 0;
 }
