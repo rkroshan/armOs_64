@@ -39,4 +39,6 @@ int read_root_directory(void *buffer);
 void memset(void *dst, int value, unsigned int size);
 void memcpy(void *dst, void *src, unsigned int size);
 void memmove(void *dst, void *src, unsigned int size);
+
+void all_caps_char(char* buffer);
 #endif

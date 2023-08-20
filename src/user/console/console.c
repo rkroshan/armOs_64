@@ -49,7 +49,7 @@ int main(void)
         if (buffer_size == 0) { /*if nothing in buffer loop again and print the ususal shell prompt*/
             continue;
         }
-
+        all_caps_char(buffer); /*fat16 issue need to cap all filenames*/
         int fd = open_file(buffer); /*we expect use needs to run the file input via keyboard*/
         if (fd == -1) {
             printf("No Such file\r\n"); /*if fd doesn't exist print error*/
