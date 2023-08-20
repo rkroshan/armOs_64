@@ -9,6 +9,7 @@
 .global read_file
 .global fork
 .global getpid
+.global exec
 
 writeu:
     sub sp, sp, #16     //push the SP 2 regs down
@@ -123,4 +124,18 @@ getpid:
 
     svc #0
 
+    ret
+
+exec:
+    sub sp, sp, #8
+    mov x8, #10
+
+    str x0, [sp]
+
+    mov x0, #1
+    mov x1, sp
+
+    svc #0
+
+    add sp, sp, #8
     ret

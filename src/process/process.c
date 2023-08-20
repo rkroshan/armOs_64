@@ -267,3 +267,30 @@ int fork(void)
 
     return process->pid; /*this is what parent process get to see in pid*/
  }
+
+ int exec(struct Process *process, char *name)
+{
+    int fd;
+    uint32_t size;
+
+    fd = open_file(process, name); /*get the fd for the file, if file exist*/
+    if (fd == -1) {
+        exit();
+    }
+
+    memset((void*)0x400000, 0, PAGE_SIZE); /*memset the current mapping of process at user VA 0x400000*/
+    size = get_file_size(process, fd); /*get the file size*/
+    size = read_file(process, fd, (void*)0x400000, size); /*map the content of file onto user VA mapped page, this replaces all executing code in new forked process, point to note is we are still using the same page replacing it's content*/
+    if (size == 0xffffffff) {
+        exit(); /*failed to copy, kill the process*/
+    }
+
+    close_file(process, fd); /*close the file*/
+
+    memset(process->tf, 0, sizeof(struct TrapFrame)); /*reset the context so that process starts from 0 and intilatize import regs as new alloc process*/
+    process->tf->elr = 0x400000; /*this is a VA where every user process will be mapped to return to el0*/
+    process->tf->sp0 = 0x400000 + PAGE_SIZE; /*and the stack pointer will starting from one page above*/
+    process->tf->spsr = 0; /*switch to el0, with interrupts enabled*/
+
+    return 0;
+}

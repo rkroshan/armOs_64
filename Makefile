@@ -20,6 +20,8 @@ export FS16_IMG = fs16.img
 export OS_BIN = os.bin
 export INIT_BIN = init.bin
 export INIT_ELF = init.elf
+export TEST_BIN = test.bin
+export TEST_ELF = test.elf
 
 .PHONY: all clean build run 
 
@@ -45,6 +47,8 @@ make_os:
 	sudo cp $(BIN_DIRECTORY)/textfile.txt /mnt/
 #push init.bin as well
 	sudo cp $(BIN_DIRECTORY)/$(INIT_BIN) /mnt/
+#push test.bin as well
+	sudo cp $(BIN_DIRECTORY)/$(TEST_BIN) /mnt/
 	sudo umount /mnt
 #append the FS in the OS binary
 	dd if=$(BIN_DIRECTORY)/$(FS16_IMG) >> $(BIN_DIRECTORY)/$(OS_BIN)

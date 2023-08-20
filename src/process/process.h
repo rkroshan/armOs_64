@@ -58,5 +58,7 @@ void exit(void);
 void wait(int pid);
 /*func to fork a process*/
 int fork(void);
+/*func to execute a file, completely replaces the current process map and load new data onto same process to execute to return*/
+int exec(struct Process *process, char *name);
 
 #endif

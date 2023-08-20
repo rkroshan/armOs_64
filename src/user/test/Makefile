@@ -4,27 +4,20 @@
 #$(shell ls $(PWD) -F | grep "\/") ; for reference
 DIRECTORY = .
 #Find all .c and .asm files in all the directories found
-SRC_FILES = $(foreach d,$(DIRECTORY),$(shell find $(d) -maxdepth 1 -name "*.c" -or -name "*.s"))
+SRC_FILES = $(foreach d,$(DIRECTORY),$(shell find $(d) -name "*.c" -or -name "*.s"))
 #create object file names by subsituting extensions with .o , using filter helps to substitute multiple files with different patterns
 OBJ_FILES = $(filter %.o,$(patsubst %.s,%.s.o,$(SRC_FILES)) $(patsubst %.c,%.o,$(SRC_FILES)))
 # #extract the file name from the absolute file paths
 # FILES = $(foreach d,$(OBJ_FILES),$(shell basename $(d)))
-export LIB_FILE = lib.a
 
 
-all: build_lib build_test compile pre_install build clean
-
-build_lib:
-	$(MAKE) -C $(DIRECTORY)/lib
-
-build_test:
-	$(MAKE) -C $(DIRECTORY)/test
+all: compile pre_install build clean
 
 compile: $(OBJ_FILES)
 
 build:
-	$(LD) $(LDFLAGS) -T $(DIRECTORY)/ulinker.ld -L $(BUILD_USER_DIRECTORY) -o $(BIN_DIRECTORY)/$(INIT_ELF) $(OBJ_FILES) $(BUILD_USER_DIRECTORY)/$(LIB_FILE)
-	$(OBJCPY) -O binary $(BIN_DIRECTORY)/$(INIT_ELF) $(BIN_DIRECTORY)/$(INIT_BIN)
+	$(LD) $(LDFLAGS) -T $(DIRECTORY)/ulinker.ld -L $(BUILD_USER_DIRECTORY) -o $(BIN_DIRECTORY)/$(TEST_ELF) $(OBJ_FILES) $(BUILD_USER_DIRECTORY)/$(LIB_FILE)
+	$(OBJCPY) -O binary $(BIN_DIRECTORY)/$(TEST_ELF) $(BIN_DIRECTORY)/$(TEST_BIN)
 
 # .s compilation
 %.s.o: %.s
@@ -38,11 +31,5 @@ pre_install:
         cp -rfv $$file $(BUILD_USER_DIRECTORY)/. ; \
     done
 
-clean: clean_lib clean_test
+clean: 
 	rm -rf $(OBJ_FILES)
-
-clean_lib:
-	$(MAKE) -C $(DIRECTORY)/lib clean
-
-clean_test:
-	$(MAKE) -C $(DIRECTORY)/test clean
