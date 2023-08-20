@@ -10,6 +10,7 @@
 .global fork
 .global getpid
 .global exec
+.global keyboard_read
 
 writeu:
     sub sp, sp, #16     //push the SP 2 regs down
@@ -138,4 +139,12 @@ exec:
     svc #0
 
     add sp, sp, #8
+    ret
+
+keyboard_read:
+    mov x8, #11
+    mov x0, #0
+
+    svc #0
+
     ret

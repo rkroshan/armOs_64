@@ -14,4 +14,7 @@ int read_file(int fd, void *buffer, uint32_t size);
 int fork(void);
 int getpid(void);
 int exec(char *file_name);
+char keyboard_read(void);
+
+void memset(void *dst, int value, unsigned int size);
 #endif

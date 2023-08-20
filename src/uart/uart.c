@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "utils/utils.h"
+#include "keyboard/keyboard.h"
 
 void write_char(unsigned char c)
 {
@@ -36,15 +37,7 @@ void uart_interrupt_handler(void)
     uint32_t status = inw(UART0_MIS);
 
     if (status & (1 << 4)) { /*checking the RXMIS reg value*/
-        char ch = read_char();
-
-        if (ch == '\r') {
-            write_string("\r\n");
-        }
-        else {
-            write_char(ch);
-        }
-        
+        keyboard_handler();
         outw(UART0_ICR, (1 << 4)); /*clear RXMIS reg since all are level triggered interrupt*/
     }
 }

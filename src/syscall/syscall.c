@@ -2,6 +2,7 @@
 #include "utils/print.h"
 #include "timer/generic_timer.h"
 #include "process/process.h"
+#include "keyboard/keyboard.h"
 
 static SYSTEMCALL system_calls[20]; /*currently 10 syscalls*/
 
@@ -20,7 +21,7 @@ static int sys_sleep(int64_t *argptr)
     ticks = get_ticks();
     old_ticks = ticks;
 
-    while (ticks - old_ticks < sleep_ticks) { /*check if sleep ticks exceeds*/
+    while (ticks - old_ticks < sleep_ticks) { /*check if sleep ticks exceeds, this loop is necessary so that wakeup should not put this process into ready list before ticks exceeds*/
         sleep(-1); /*put the process in waiting list*/
         ticks = get_ticks();
     }
@@ -85,13 +86,18 @@ static int sys_exec(int64_t *argptr)
     return exec(process, (char*)argptr[0]);
 }
 
+static int sys_keyboard_read(int64_t *argptr)
+{
+    return read_key_buffer();
+}
+
 void system_call(struct TrapFrame *tf)
 {
     int64_t i = tf->x8; /*SVC number*/
     int64_t param_count = tf->x0;   /*parameter count on stack*/
     int64_t *argptr = (int64_t*)tf->x1; /*pointer to stack where boths arguments are present*/
 
-    if (param_count < 0 || i < 0 || i > 10) {
+    if (param_count < 0 || i < 0 || i > 11) {
         printk("INVALID SVC\n");
         tf->x0 = -1;    /*if param count is neg then problem*/
         return;
@@ -114,4 +120,5 @@ void init_system_call(void)
     system_calls[8] = sys_fork; /*fork process svc*/
     system_calls[9] = sys_getpid; /*get current process pid svc*/
     system_calls[10] = sys_exec; /*exec svc, completely replaces the current process map and load new data onto same process to execute to return*/
+    system_calls[11] = sys_keyboard_read; /*keyboard press svc*/
 }
