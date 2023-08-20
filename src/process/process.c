@@ -85,7 +85,7 @@ static void init_user_process(void)
     process = alloc_new_process();
     ASSERT(process != NULL);
 
-    ASSERT(setup_uvm((uint64_t)process->page_map, "INIT.BIN")); /*setup the user process at the process map addr*/
+    ASSERT(setup_uvm(process, "INIT.BIN")); /*setup the user process at the process map addr*/
 
     process_control = get_pc(); /*get the process control*/
     list = &process_control->ready_list; /*put the process in ready list*/

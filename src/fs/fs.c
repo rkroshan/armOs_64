@@ -147,69 +147,64 @@ static uint32_t search_file(char *path)
 }
 
 /*actual read function*/
-static uint32_t read_raw_data(uint32_t cluster_index, char *buffer, uint32_t size)
+static uint32_t read_raw_data(uint32_t cluster_index, char *buffer, uint32_t position, uint32_t size)
 {
     struct BPB* bpb;
     char *data;
     uint32_t read_size = 0;
-    uint32_t cluster_size; 
-    uint32_t index; 
-    
-    bpb = get_fs_bpb(); /*get the bios param block*/
-    cluster_size = get_cluster_size(); /* get the cluster size*/
-    index = cluster_index;
+    uint32_t cluster_size = get_cluster_size(); 
+    uint32_t index = cluster_index;
+    uint32_t count = position / cluster_size;
+    uint32_t offset = position % cluster_size;
 
-    if (index < 2) { /*if cluster index is less than 2 return UINT32_MAX, it should not happen*/
-        return 0xffffffff;
+    for (uint32_t i = 0; i < count; i++) {
+        index = get_cluster_value(index);
+        ASSERT(index < 0xfff7); /*last index 0xfff7*/
     }
-    
-    while (read_size < size) {
-        data  = (char *)((uint64_t)bpb + get_cluster_offset(index)); /*get the offset where cluster data is present*/
-        index = get_cluster_value(index); /*cluster data size at the offset, generally at max 512 bytes*/
-        
-        if (index >= 0xfff7) { /*it means last cluster index*/
-            memcpy(buffer, data, size - read_size); /*copy the remaining data and return*/
-            read_size += size - read_size;
+
+    bpb = get_fs_bpb(); /*get the bios parameter block */
+
+    if (offset != 0) { /*for offset !=0 need to handle data copy upto cluster size*/
+        read_size = (offset + size) <= cluster_size ? size : (cluster_size - offset);
+        data = (char*)(get_cluster_offset(index) + (uint64_t)bpb);
+        memcpy(buffer, data + offset, read_size);
+        buffer += read_size;
+        index = get_cluster_value(index);
+    }
+
+    while (read_size < size && index < 0xfff7) { /*fill in the remaining data*/
+        data = (char*)(get_cluster_offset(index) + (uint64_t)bpb);
+
+        if (read_size + cluster_size >= size) {
+            memcpy(buffer, data, size - read_size);
+            read_size = size;
             break;
         }
 
-        memcpy(buffer, data, cluster_size); /*copy data upto cluster size*/
-
+        memcpy(buffer, data, cluster_size);
         buffer += cluster_size;
         read_size += cluster_size;
+        index = get_cluster_value(index);
     }
 
-    return read_size; /*return the total read_size*/
+    return read_size;
 }
 
 /*read file and copy data onto buffer */
-static uint32_t read_file(uint32_t cluster_index, void *buffer, uint32_t size)
+uint32_t read_file(struct Process *process, int fd, void *buffer, uint32_t size)
 {
-    return read_raw_data(cluster_index, buffer, size);
-}
+    uint32_t position = process->file[fd]->position;
+    uint32_t file_size = process->file[fd]->fcb->file_size;
+    uint32_t read_size;
 
-int load_file(char *path, uint64_t addr)
-{
-    uint32_t index;
-    uint32_t file_size;
-    uint32_t cluster_index;
-    struct DirEntry *dir_entry;
-    int ret = -1; /*Failure*/
-    
-    index = search_file(path); /*search for file from the path string given and return directory index, sub directories not supported at the moment*/
-
-    if (index != 0xffffffff) { /*it means dir_entry index exist*/
-        
-        dir_entry = get_root_directory(); /*get the root directory*/
-        file_size = dir_entry[index].file_size; /*get the file_size*/
-        cluster_index = dir_entry[index].cluster_index; /*get the cluster index*/
-        
-        if (read_file(cluster_index, (void*)addr, file_size) == file_size) { /*read the file upto file_size should be < 2MB and copy onto VA provided*/
-            ret = 0; /*success*/
-        }
+    if (position + size  > file_size) { /*although can be handled differently currently this is not allowed, you should know what you are doing :)*/
+        return -1;
     }
 
-    return ret;
+    read_size = read_raw_data(process->file[fd]->fcb->cluster_index, buffer, position, size);
+    process->file[fd]->position += read_size; /*update the position*/
+
+    return read_size;
 }
 
 /*check if fcb already exist or create one and inc the count*/

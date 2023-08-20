@@ -6,6 +6,7 @@
 .global close_file
 .global open_file
 .global get_file_size
+.global read_file
 
 writeu:
     sub sp, sp, #16     //push the SP 2 regs down
@@ -91,3 +92,17 @@ get_file_size:
     add sp, sp, #8
     ret
     
+read_file: //3 arguments
+    sub sp, sp, #24
+    mov x8, #7
+
+    stp x0, x1, [sp]
+    str x2, [sp, #16]
+
+    mov x0, #3
+    mov x1, sp
+
+    svc #1234
+
+    add sp, sp, #24
+    ret

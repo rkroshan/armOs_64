@@ -68,8 +68,8 @@ struct Process;
 
 /*do basic FAT16 filesystem bootup signature validation whether FS is available or not*/
 void init_fs(void);
-/*load the data from the file present at the path onto the VA addr, note it should be less than 2MB, there is no size param check at the moment*/
-int load_file(char *path, uint64_t addr);
+/*read file specified by file desciptor into the buffer upto the size*/
+uint32_t read_file(struct Process *process, int fd, void *buffer, uint32_t size);
 /*setup the fd and fcb for the process requesting the file*/
 int open_file(struct Process *proc, char *path_name);
 /*clear the fd and fcb for the file in the process struct*/

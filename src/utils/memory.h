@@ -51,6 +51,8 @@ struct Page {
 /*Page align down PA_DOWN can also be done as ((uint64_t)v & 0x1FFFFF)*/
 #define PA_DOWN(v)  (((uint64_t)v >> 21) << 21)
 
+struct Process;
+
 /*allocate and return pointer to in Page of size PAGE_size else NULL*/
 void* kalloc(void);
 /*put the page back into free up page linked list*/
@@ -61,8 +63,8 @@ void init_memory(void);
 bool map_page(uint64_t map, uint64_t v, uint64_t pa, uint64_t attribute);
 /*setup ttbr0_el1*/
 void switch_vm(uint64_t map);
-/*map the file data onto VA 0x400000 getting pgd from map VA*/
-bool setup_uvm(uint64_t map, char *file_name);
+/*map the file data onto VA 0x400000 getting pgd from process page_map VA*/
+bool setup_uvm(struct Process *process, char *file_name);
 /*Free the Physical page mapped to the VA*/
 void free_page(uint64_t map, uint64_t vstart);
 /*Free the complete VM memory along with Page Tables*/

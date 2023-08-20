@@ -3,6 +3,7 @@
 #include "utils/print.h"
 #include "utils/utils.h"
 #include "fs/fs.h"
+#include "process/process.h"
 #include <stddef.h>
 
 /*static struct to hold free page linked list*/
@@ -197,9 +198,10 @@ void free_vm(uint64_t map)
     free_pgd(map); /*Free up the PGD pages*/
 }
 
-bool setup_uvm(uint64_t map, char *file_name)
+bool setup_uvm(struct Process *process, char *file_name)
 {
     bool status = false;
+    uint64_t map = process->page_map;
     void *page = kalloc();
 
     if (page != NULL) {
@@ -207,10 +209,20 @@ bool setup_uvm(uint64_t map, char *file_name)
         status = map_page(map, 0x400000, V2P(page), ENTRY_V | USER | NORMAL_MEMORY | ENTRY_ACCESSED);
 
         if (status == true) {
-            if (load_file(file_name, (uint64_t)page) == -1) {
+            int fd = open_file(process, file_name);
+            if (fd == -1) {
                 free_vm(map);
                 return false;
             }
+
+            uint32_t size = get_file_size(process, fd);
+
+            if (read_file(process, fd, page, size) != size) {
+                free_vm(map);
+                return false;
+            }
+
+            close_file(process, fd);
         }
         else {
             kfree((uint64_t)page);

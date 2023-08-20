@@ -4,6 +4,7 @@ int main(void)
 {
     int fd;
     int size;
+    char buffer[100] = { 0 };
 
     fd = open_file("TEXTFILE.TXT");
     if (fd == -1) {
@@ -11,7 +12,9 @@ int main(void)
     }
     else {
         size = get_file_size(fd);
-        printf("The size of the file is %d bytes\r\n", (int64_t)size);
+        size = read_file(fd, buffer, size);
+        printf("DATA READ: %s\r\n", buffer);
+        printf("Read %dbytes in total \r\n", (int64_t)size);
     }
 
     close_file(fd);
