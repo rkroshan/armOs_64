@@ -74,3 +74,7 @@ gdb:
 
 dump:
 	$(DUMP) -S $(BIN_DIRECTORY)/$(KERNEL_ELF) > $(BIN_DIRECTORY)/dump.txt
+	$(DUMP) -S $(BIN_DIRECTORY)/$(INIT_ELF) > $(BIN_DIRECTORY)/init.txt
+	$(DUMP) -S $(BIN_DIRECTORY)/$(CONSOLE_ELF) > $(BIN_DIRECTORY)/console.txt
+	$(DUMP) -S $(BIN_DIRECTORY)/$(TEST_ELF) > $(BIN_DIRECTORY)/test.txt
+	$(DUMP) -S $(BIN_DIRECTORY)/$(LS_ELF) > $(BIN_DIRECTORY)/ls.txt
