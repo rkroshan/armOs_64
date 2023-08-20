@@ -91,13 +91,18 @@ static int sys_keyboard_read(int64_t *argptr)
     return read_key_buffer();
 }
 
+static int sys_read_root_directory(int64_t *argptr)
+{
+    return read_root_directory((char*)argptr[0]);
+}
+
 void system_call(struct TrapFrame *tf)
 {
     int64_t i = tf->x8; /*SVC number*/
     int64_t param_count = tf->x0;   /*parameter count on stack*/
     int64_t *argptr = (int64_t*)tf->x1; /*pointer to stack where boths arguments are present*/
 
-    if (param_count < 0 || i < 0 || i > 11) {
+    if (param_count < 0 || i < 0 || i > 12) {
         printk("INVALID SVC\n");
         tf->x0 = -1;    /*if param count is neg then problem*/
         return;
@@ -121,4 +126,5 @@ void init_system_call(void)
     system_calls[9] = sys_getpid; /*get current process pid svc*/
     system_calls[10] = sys_exec; /*exec svc, completely replaces the current process map and load new data onto same process to execute to return*/
     system_calls[11] = sys_keyboard_read; /*keyboard press svc*/
+    system_calls[12] = sys_read_root_directory; /*read root directory svc*/
 }

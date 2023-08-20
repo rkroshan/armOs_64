@@ -11,6 +11,7 @@
 .global getpid
 .global exec
 .global keyboard_read
+.global read_root_directory
 
 writeu:
     sub sp, sp, #16     //push the SP 2 regs down
@@ -147,4 +148,17 @@ keyboard_read:
 
     svc #0
 
+    ret
+
+read_root_directory:
+    sub sp, sp, #8
+    mov x8, #12
+
+    str x0, [sp]
+    mov x0, #1
+    mov x1, sp
+
+    svc #0
+
+    add sp, sp, #8
     ret

@@ -226,6 +226,16 @@ static uint32_t get_fcb(uint32_t index)
     return index;
 }
 
+int read_root_directory(char *buffer)
+{
+    struct DirEntry *dir_entry = get_root_directory();
+    uint32_t count = get_root_directory_count(); /*get the count of entires present*/
+
+    memcpy(buffer, dir_entry, count * sizeof(struct DirEntry)); /*return all the entries struct back to process*/
+
+    return count;
+}
+
 /*return the file size*/
 uint32_t get_file_size(struct Process *process, int fd)
 {

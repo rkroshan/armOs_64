@@ -77,6 +77,7 @@ int open_file(struct Process *proc, char *path_name);
 void close_file(struct Process *proc, int fd);
 /*return the file size mentioned by fd*/
 uint32_t get_file_size(struct Process *process, int fd);
-
+/*return the root directory entries into buffer*/
+int read_root_directory(char *buffer);
 
 #endif

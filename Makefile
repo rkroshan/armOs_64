@@ -24,6 +24,8 @@ export TEST_BIN = test.bin
 export TEST_ELF = test.elf
 export CONSOLE_BIN = console.bin
 export CONSOLE_ELF = console.elf
+export LS_BIN = ls.bin
+export LS_ELF = ls.elf
 
 .PHONY: all clean build run 
 
@@ -53,6 +55,8 @@ make_os:
 	sudo cp $(BIN_DIRECTORY)/$(TEST_BIN) /mnt/
 #push console.bin as well
 	sudo cp $(BIN_DIRECTORY)/$(CONSOLE_BIN) /mnt/
+#push ls.bin as well
+	sudo cp $(BIN_DIRECTORY)/$(LS_BIN) /mnt/
 	sudo umount /mnt
 #append the FS in the OS binary
 	dd if=$(BIN_DIRECTORY)/$(FS16_IMG) >> $(BIN_DIRECTORY)/$(OS_BIN)

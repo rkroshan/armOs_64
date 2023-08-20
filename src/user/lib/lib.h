@@ -3,6 +3,25 @@
 
 #include <stdint.h>
 
+struct DirEntry {
+    uint8_t name[8];
+    uint8_t ext[3];
+    uint8_t attributes;
+    uint8_t reserved;
+    uint8_t create_ms;
+    uint16_t create_time;
+    uint16_t create_date;
+    uint16_t access_date;
+    uint16_t attr_index;
+    uint16_t m_time;
+    uint16_t m_date;
+    uint16_t cluster_index;
+    uint32_t file_size;
+} __attribute__((packed));
+
+#define ENTRY_AVAILABLE 0
+#define ENTRY_DELETED 0xe5
+
 int printf(const char *format, ...);
 void sleepu(uint64_t ticks);
 void exit(void);
@@ -15,6 +34,9 @@ int fork(void);
 int getpid(void);
 int exec(char *file_name);
 char keyboard_read(void);
+int read_root_directory(void *buffer);
 
 void memset(void *dst, int value, unsigned int size);
+void memcpy(void *dst, void *src, unsigned int size);
+void memmove(void *dst, void *src, unsigned int size);
 #endif

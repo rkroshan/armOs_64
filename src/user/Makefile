@@ -12,7 +12,7 @@ OBJ_FILES = $(filter %.o,$(patsubst %.s,%.s.o,$(SRC_FILES)) $(patsubst %.c,%.o,$
 export LIB_FILE = lib.a
 
 
-all: build_lib build_test build_console compile pre_install build clean
+all: build_lib build_test build_console build_ls compile pre_install build clean
 
 build_lib:
 	$(MAKE) -C $(DIRECTORY)/lib
@@ -22,6 +22,9 @@ build_test:
 
 build_console:
 	$(MAKE) -C $(DIRECTORY)/console
+
+build_ls:
+	$(MAKE) -C $(DIRECTORY)/ls
 
 compile: $(OBJ_FILES)
 
@@ -41,7 +44,7 @@ pre_install:
         cp -rfv $$file $(BUILD_USER_DIRECTORY)/. ; \
     done
 
-clean: clean_lib clean_test clean_console
+clean: clean_lib clean_test clean_console clean_ls
 	rm -rf $(OBJ_FILES)
 
 clean_lib:
@@ -52,3 +55,6 @@ clean_test:
 
 clean_console:
 	$(MAKE) -C $(DIRECTORY)/console clean
+
+clean_ls:
+	$(MAKE) -C $(DIRECTORY)/ls clean
