@@ -7,6 +7,8 @@
 .global open_file
 .global get_file_size
 .global read_file
+.global fork
+.global getpid
 
 writeu:
     sub sp, sp, #16     //push the SP 2 regs down
@@ -102,7 +104,23 @@ read_file: //3 arguments
     mov x0, #3
     mov x1, sp
 
-    svc #1234
+    svc #0
 
     add sp, sp, #24
+    ret
+
+fork:
+    mov x8, #8
+    mov x0, #0
+
+    svc #0
+
+    ret
+
+getpid:
+    mov x8, #9
+    mov x0, #0
+
+    svc #0
+
     ret

@@ -56,5 +56,7 @@ void wake_up(int wait);
 void exit(void);
 /*func to free up process resources once pid matches*/
 void wait(int pid);
+/*func to fork a process*/
+int fork(void);
 
 #endif

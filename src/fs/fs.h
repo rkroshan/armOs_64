@@ -56,6 +56,7 @@ struct FCB {
 struct FileDesc {
     struct FCB *fcb;
     uint32_t position;
+    int count;
 };
 
 #define FS_BASE P2V(0x30000000)

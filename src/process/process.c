@@ -228,3 +228,42 @@ void wait(int pid)
         sleep(-3); /*sleep the current process for -3 ticks, means wake it up on wake_up call*/
     }
 }
+
+int fork(void)
+{
+    struct ProcessControl *process_control;
+    struct Process *process;
+    struct Process *current_process;
+    struct HeadList *list;
+
+    process_control = get_pc();
+    current_process = process_control->current_process;
+    list = &process_control->ready_list;
+
+    process = alloc_new_process(); /*allocate new process*/
+    if (process == NULL) {
+        ASSERT(0);
+        return -1;
+    }
+
+    if (copy_uvm(process->page_map, current_process->page_map, PAGE_SIZE) == false) { /*copy the page_map from current process to new process*/
+        ASSERT(0);
+        return -1;
+    }
+
+    memcpy(process->file, current_process->file, 100 * sizeof(struct FileDesc*)); /*copy all the fd as well*/
+
+    for (int i = 0; i < 100; i++) { /*since both will point to same fd, increment the fd counter to make sure don't unset the fcb before count =0*/
+        if (process->file[i] != NULL) {
+            process->file[i]->count++;
+            process->file[i]->fcb->count++;
+        }
+    }
+
+    memcpy(process->tf, current_process->tf, sizeof(struct TrapFrame)); /*copy the trapframe as well*/
+    process->tf->x0 = 0; /*return value as 0 for child process pid value*/
+    process->state = PROC_READY;
+    append_list_tail(list, (struct List*)process); /*append the process in ready list*/
+
+    return process->pid; /*this is what parent process get to see in pid*/
+ }

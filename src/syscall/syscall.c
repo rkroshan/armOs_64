@@ -66,13 +66,24 @@ static int sys_read_file(int64_t *argptr)
     return read_file(pc->current_process, argptr[0], (void*)argptr[1], argptr[2]);
 }
 
+static int sys_fork(int64_t *argptr)
+{
+    return fork();
+}
+
+static int sys_getpid(int64_t *argptr)
+{
+    struct ProcessControl *pc = get_pc();
+    return pc->current_process->pid;
+}
+
 void system_call(struct TrapFrame *tf)
 {
     int64_t i = tf->x8; /*SVC number*/
     int64_t param_count = tf->x0;   /*parameter count on stack*/
     int64_t *argptr = (int64_t*)tf->x1; /*pointer to stack where boths arguments are present*/
 
-    if (param_count < 0 || i < 0 || i > 7) {
+    if (param_count < 0 || i < 0 || i > 9) {
         tf->x0 = -1;    /*if param count is neg then problem*/
         return;
     }
@@ -91,4 +102,6 @@ void init_system_call(void)
     system_calls[5] = sys_close_file; /*close file svc*/
     system_calls[6] = sys_get_file_size; /*get file size svc*/
     system_calls[7] = sys_read_file; /*read file svc*/
+    system_calls[8] = sys_fork; /*fork process svc*/
+    system_calls[9] = sys_getpid; /*get current process pid svc*/
 }

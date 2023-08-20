@@ -69,5 +69,7 @@ bool setup_uvm(struct Process *process, char *file_name);
 void free_page(uint64_t map, uint64_t vstart);
 /*Free the complete VM memory along with Page Tables*/
 void free_vm(uint64_t map);
+/*copy the page_map from current process to new process, can we map to same page rather can copying ?*/
+bool copy_uvm(uint64_t dst_map, uint64_t src_map, int size);
 
 #endif

@@ -269,6 +269,7 @@ int open_file(struct Process *proc, char *path_name)
     fcb_index = get_fcb(entry_index); /*check if fcb already exist or create one and inc the count*/
     memset(&file_desc_table[file_desc_index], 0, sizeof(struct FileDesc)); /*clear fd table index struct*/
     file_desc_table[file_desc_index].fcb = &fcb_table[fcb_index]; /*assign the fd table index with the fcb we got*/
+    file_desc_table[file_desc_index].count = 1;
     proc->file[fd] = &file_desc_table[file_desc_index]; /*assignt eh fd table index addr to proc fd*/
 
     return fd;
@@ -285,7 +286,10 @@ void close_file(struct Process *proc, int fd)
 {
     put_fcb(proc->file[fd]->fcb); /*dec the fcb open count*/
 
-    proc->file[fd]->fcb = NULL; /*clear the fd of the process as well as the fd->fcb*/
+    if (proc->file[fd]->count == 0) {
+        proc->file[fd]->fcb = NULL;
+    } /*clear the fd of the process (if count is zero) as well as the fd->fcb*/
+
     proc->file[fd] = NULL;
 }
 
